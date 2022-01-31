@@ -3,6 +3,8 @@ SET NAMES utf8;
 -- Suppression des tables si existent
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Articles;
+DROP TABLE IF EXISTS Orders;
+
 
 -- Création de la table Users
 CREATE TABLE Users (

@@ -12,27 +12,27 @@ exports.id = (req, res, next) => {
 };
 
 // Modele de sauce
-const sauceSchema = Joi.object({
+const articleSchema = Joi.object({
 	userId: Joi.string().alphanum().length(24).required(),
-	name: Joi.string().trim().min(1).required(),
+	type: Joi.string().trim().min(1).required(),
 	description: Joi.string().trim().min(1).required(),
-	manufacturer: Joi.string().trim().min(1).required(),
-	mainPepper: Joi.string().trim().min(1).required(),
-	heat: Joi.number().integer().min(1).max(10).required(),
+	price: Joi.number().integer().min(1).max(1000000).required(),
+	quantity: Joi.number().integer().min(1).max(1000000).required(),
+	username: Joi.string().trim().min(3).required(),
 });
-exports.sauce = (req, res, next) => {
-	let sauce;
+exports.article = (req, res, next) => {
+	let article;
 
 	// format différent si fichier image présent
 	if (req.file) {
-		sauce = JSON.parse(req.body.sauce);
+		article = JSON.parse(req.body.article);
 	} else {
-		sauce = req.body;
+		article = req.body;
 	}
 
-	const { error } = sauceSchema.validate(sauce);
+	const { error } = articleSchema.validate(article);
 	if (error) {
-		res.status(400).json({ error: "Joi: Invalid Sauce Data" });
+		res.status(400).json({ error: "Joi: Invalid Article Data" });
 	} else {
 		next();
 	}

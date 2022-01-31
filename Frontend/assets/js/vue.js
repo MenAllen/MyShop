@@ -90,7 +90,6 @@ const UserSettings = {
       .then(() => {
 				this.notyf.success("User " + this.username + " created");
 				document.getElementById("form-signup").reset();
-//				setTimeout(window.location.reload(), 3000); //On attend 3 secondes avant d'exécuter la fonction
       })
       .catch(err => {
         this.notyf.error("Erreur Signup " + err.response.status);
@@ -153,8 +152,7 @@ const DisplayCarts = {
 		return {
 			products: [],
 			searchKey: "",
-			liked: [],
-			cart: [],
+			liked: []
 		};
 	},
 
@@ -179,26 +177,13 @@ const DisplayCarts = {
 			let cookieValue = JSON.parse($cookies.get("like"));
 			cookieValue == null ? (this.liked = []) : (this.liked = cookieValue);
 		},
-		cartTotalAmount() {
-			let total = 0;
-			for (item in this.cart) {
-				total = total + (this.cart[item].quantity * this.cart[item].price);
-			}
-			return total;
-		},
-		itemTotalAmount() {
-			let itemTotal = 0;
-			for (item in this.cart) {
-				itemTotal = itemTotal + this.cart[item].quantity;
-			}
-			return itemTotal;
-		}
 	},
 	mounted: () => {
 		this.getLikeCookie;
 	},
 
 	methods: {
+
 	// Permet d'afficher tous les articles
     getArticles() {
 			axios.get('http://localhost:3000/api/article', {
@@ -208,13 +193,10 @@ const DisplayCarts = {
 				}
 			})
 			.then(response => { 
-				console.log(response);
 				this.products = response.data.results;
 			})
 			.catch(err => {
 				this.notyf.error("Erreur Display " + err.response.status + " " + err.response.statusText);
-				console.log(err.response);
-//				window.location.reload();
 			})
 		},
 
@@ -222,35 +204,6 @@ const DisplayCarts = {
 			setTimeout(() => {
 				$cookies.set("like", JSON.stringify(this.liked));
 			}, 300);
-		},
-		addToCart(product) {
-			// Check if already in cart
-			for (let i = 0; i < this.cart.length; i++) {
-				if (this.cart[i].id === product.id) {
-					return this.cart[i].quantity++;
-				}
-			}
-			this.cart.push({
-				id: product.id,
-				img: product.articleUrl,
-				description: product.articleDescription,
-				price: product.articlePrice,
-				quantity: 1,
-			});
-			console.log(this.cart[0]);
-		},
-		cartPlusOne(product) {
-			product.quantity = product.quantity + 1;
-		},
-		cartMinusOne(product, id) {
-			if (product.quantity == 1) {
-				this.cartRemoveItem(id);
-			} else {
-				product.quantity = product.quantity - 1;
-			}
-		},
-		cartRemoveItem(id) {
-			this.$delete(this.cart, id);
 		},
 	},
 };
@@ -262,6 +215,7 @@ const CreateCard = {
 	name: "CreateCard",
 	data: () => {
 		return {
+			titre: '',
 			description: '',
 			price: 0,
 			type: '',
@@ -292,8 +246,11 @@ const CreateCard = {
 		createArticle() {
 			const formData = new FormData();
 
+			formData.append("titre", this.titre);
 			formData.append("description", this.description);
-			formData.append("price", this.price);					
+			formData.append("price", this.price);
+			formData.append("type", this.type);
+			formData.append("quantity", 1);			
 			formData.append("image", this.imagePost);
 			formData.append("username", this.currentUser);			
 
@@ -320,8 +277,51 @@ const CreateCard = {
 // =========================================================================================================
 
 const ShoppingCart = {
-	template: "<h1>Shopping Cart</h1>",
+	template: "#ShoppingCart",
 	name: "ShoppingCart",
+
+	created() {
+		this.notyf = new Notyf({
+			position: {
+				x: 'center',
+				y: 'top'
+			}
+		});				
+	},
+
+	methods: {
+
+		backToShopping() {
+			this.$router.push("/display-carts");
+		},
+
+		processOrder(totalprice) {
+
+			if (totalprice != 0) {
+				axios.post('http://localhost:3000/api/order', {
+					username: localStorage.getItem('username'),
+					totalprice: totalprice,
+					articles: this.$store.state.cart
+				},				
+				{ headers: {
+					'Content-Type' : 'application/json',
+					'Authorization': 'Bearer ' + localStorage.getItem('token')
+					}
+				})
+				.then(() => {
+					this.notyf.success("Commande transmise")
+					this.	$store.commit('removeCart');
+					this.$router.push("/display-carts");
+				})
+				.catch(err => {
+					this.notyf.error("Erreur Process Order " + err.response.status + " " + err.response.statusText);
+					this.$router.push("/display-carts");
+				})
+			} else {
+				this.notyf.success("Votre paner est vide !")
+			}
+		},
+	}
 };
 
 const router = new VueRouter({
@@ -334,8 +334,76 @@ const router = new VueRouter({
 	],
 });
 
-Vue.prototype.$statusApp = 'Disconnected';
+const store = new Vuex.Store({
+	state: {
+			cart: [],
+	},
+
+	mutations: {
+
+		addProductToCart(state, product) {
+
+			const duplicatedProductIndex = state.cart.findIndex(item => item.id === product.id);
+
+			if (duplicatedProductIndex !== -1) {
+				state.cart[duplicatedProductIndex].articleQuantity++;
+				return;
+			}
+
+			product.qty = 1;
+			state.cart.push(product);
+		},
+
+		subProductToCart(state, product) {
+
+			const duplicatedProductIndex = state.cart.findIndex(item => item.id === product.id);
+
+			if (duplicatedProductIndex !== -1) {
+				state.cart[duplicatedProductIndex].articleQuantity--;
+			}
+
+			if (state.cart[duplicatedProductIndex].articleQuantity === 0) {
+				state.cart.splice(duplicatedProductIndex, 1);
+			}
+		},
+
+		removeProductToCart(state, index) {
+			state.cart.splice(index, 1);
+		},
+
+		removeCart(state) {
+		 state.cart.splice(0, state.cart.length);
+		}
+
+	},
+
+	getters: {
+
+    cartTotalAmount(state) {
+			let total = 0;
+			for (item in state.cart) {
+				total = total + (state.cart[item].articleQuantity * state.cart[item].articlePrice);
+			}
+			return total;
+		},
+
+		itemTotalAmount(state) {
+			let itemTotal = 0;
+			for (item in state.cart) {
+				itemTotal = itemTotal + state.cart[item].articleQuantity;
+			}
+			return itemTotal;
+		},
+
+		idTotalAmount: (state) => (id) => {			
+			return state.cart[id].articleQuantity * state.cart[id].articlePrice;
+		},
+
+	}	
+});
+
 
 const vue = new Vue({
 	router,
+	store,
 }).$mount("#app");

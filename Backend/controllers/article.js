@@ -7,17 +7,17 @@ const Article = db.articles;
 exports.createArticle = (req, res, next) => {
 	console.log("createArticle");
 
-	console.log(req.user);
-	console.log(req.body);
-
 	let picture = "";
 	if (req.file) {
 		picture = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 	}
 	const article = new Article ({
 		UserId: req.user,
+		articleTitre: req.body.titre,
 		articleDescription: req.body.description,
 		articlePrice: req.body.price,
+		articleType: req.body.type,
+		articleQuantity: req.body.quantity,
 		articleUsername: req.body.username,
 		articleUrl: picture,
 	});
@@ -42,7 +42,6 @@ exports.getAllArticles = (req, res, next) => {
 //		}],
 	})
 		.then((results) => {
-			console.log(results);
 			res.status(200).json({ results });
 		})
 		.catch((error) => res.status(400).json({ error }));

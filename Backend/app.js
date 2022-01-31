@@ -8,6 +8,7 @@ const database = require("./models");
 
 const userRoutes = require("./routes/user"); // import des routes pour users
 const articleRoutes = require("./routes/article"); // import des routes pour articles
+const orderRoutes = require("./routes/order"); // import des routes pour articles
 
 // Synchronisation de la base de données
 database.sequelize
@@ -55,5 +56,6 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 // routes de l'API
 app.use("/api/user", userRoutes);
 app.use("/api/article", articleRoutes);
+app.use("/api/order", orderRoutes);
 
 module.exports = app;

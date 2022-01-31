@@ -34,8 +34,12 @@ db.Sequelize = Sequelize;
 
 db.users = require("./user.js")(sequelize, Sequelize);
 db.articles = require("./article.js")(sequelize, Sequelize);
+db.orders = require("./order.js")(sequelize, Sequelize);
 
 db.articles.belongsTo(db.users);
 db.users.hasMany(db.articles);
+
+db.orders.belongsTo(db.users);
+db.users.hasMany(db.orders);
 
 module.exports = db;
