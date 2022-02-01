@@ -1,17 +1,17 @@
 const Joi = require("joi");
 
-// Id de sauce passé en paramètre
-const sauceIdSchema = Joi.string().alphanum().length(24).required();
+// Id d'article passé en paramètre
+const articleIdSchema = Joi.string().alphanum().required();
 exports.id = (req, res, next) => {
-	const { error } = sauceIdSchema.validate(req.params.id);
+	const { error } = articleIdSchema.validate(req.params.id);
 	if (error) {
-		res.status(400).json({ error: " Joi: Invalid Sauce Id" });
+		res.status(400).json({ error: " Joi: Invalid Article Id" });
 	} else {
 		next();
 	}
 };
 
-// Modele de sauce
+// Modele d'article
 const articleSchema = Joi.object({
 	userId: Joi.string().alphanum().length(24).required(),
 	type: Joi.string().trim().min(1).required(),

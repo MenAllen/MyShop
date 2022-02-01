@@ -205,6 +205,30 @@ const DisplayCarts = {
 				$cookies.set("like", JSON.stringify(this.liked));
 			}, 300);
 		},
+
+		deleteArticle(product) {
+			let username = localStorage.getItem('username');
+
+			if (username === product.articleUsername) {
+
+				axios.delete('http://localhost:3000/api/article/' + product.id, {
+					headers: {
+							'Content-Type' : 'application/json',
+							'Authorization': 'Bearer ' + localStorage.getItem('token')
+					}
+				})
+				.then(() => {
+					this.notyf.success("Article supprimé");
+					this.getArticles();
+				})
+				.catch(err => {
+					this.notyf.error("Echec de suppression");
+				})
+
+			} else {
+				this.notyf.error("Suppression interdite")
+			}
+		},
 	},
 };
 

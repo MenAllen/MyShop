@@ -17,13 +17,13 @@
 
 	</head>
 
-	<body background="assets/img/wall-large.jpg" no-repeat center center fixed>
+	<body>
 		<div id="app">
 			<nav>
 				<div class="nav-container">
 					<div id="logo">
 						<router-link to="/display-carts">
-							<img src="./assets/img/MyShopLogo3.jpg" alt="logo" />
+							<img src="./assets/img/Logo.jpg" alt="logo" />
 						</router-link>
 					</div>
 
@@ -81,10 +81,10 @@
 												 v-bind:id="product.id"
 												 :value=product.id
 												 v-model="liked"
-												 @click="setLikeCookie()"
+												 @click="deleteArticle(product)"
 												 />
 												 <label v-bind:for="product.id">
-													 <i class="fas fa-heart"></i>
+													 <i class="fas fa-trash-alt"></i>
 												 </label>
 											</div>
 											<div class="add-to-cart">
@@ -102,7 +102,7 @@
 									</div>
 
 								</div>
-							</div>
+<!--							</div> -->
 
 								<!-- cart display -->
 								<div name="cart-anim">
@@ -149,7 +149,7 @@
 
 									</div>
 								</div>
-<!--							</div>		-->					
+							</div>					
 						</div>
 		</script>
 
